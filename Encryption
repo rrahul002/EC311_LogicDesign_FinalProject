@@ -1,0 +1,65 @@
+`timescale 1ns / 1ps
+//////////////////////////////////////////////////////////////////////////////////
+// Company:
+// Engineer:
+//
+// Create Date: 12/04/2023 10:59:57 AM
+// Design Name:
+// Module Name: Encryption
+// Project Name:
+// Target Devices:
+// Tool Versions:
+// Description:
+//
+// Dependencies:
+//
+// Revision:
+// Revision 0.01 - File Created
+// Additional Comments:
+//
+//////////////////////////////////////////////////////////////////////////////////
+module rc4_Encryption(
+	input clk,
+	input reset,
+	input [7:0] key,    	// 8-bit key for simplicity
+	input [7:0] plaintext,  // 8-bit plaintext
+	output reg [7:0] ciphertext
+);
+
+// Internal variables
+reg [7:0] S [0:255];  // The permutation array
+integer i, j;
+reg init_done;  // Flag to indicate if initialization is done
+
+// Initialization
+always @(posedge reset) begin
+	i = 0; j = 0; init_done = 0;
+	// Initial permutation of S
+	for (i = 0; i < 256; i = i + 1) begin
+    	S[i] = i;
+	end
+
+	j = 0;
+	for (i = 0; i < 256; i = i + 1) begin
+    	j = (j + S[i] + key[i % 8]) % 256;
+    	// Swap S[i] and S[j]
+    	{S[i], S[j]} = {S[j], S[i]};
+	end
+	init_done = 1;  // Initialization complete
+end
+
+// Keystream generation and encryption
+always @(posedge clk) begin
+	if (init_done) begin
+    	i = (i + 1) % 256;
+    	j = (j + S[i]) % 256;
+   	 
+    	// Swap S[i] and S[j]
+    	{S[i], S[j]} = {S[j], S[i]};
+
+    	// Generate keystream byte and encrypt
+    	ciphertext = plaintext ^ S[(S[i] + S[j]) % 256];
+	end
+end
+
+endmodule
