@@ -10,7 +10,7 @@ Team Members:
     Mateo Balzola, 
     Richard Kalich, 
     Fairuz Abushgarh, 
-    Isaac Williams, 
+    Isaac Williams
 
 Link to Project Demo Video:
 
