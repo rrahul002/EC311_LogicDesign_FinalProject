@@ -6,11 +6,11 @@ Project Name:
   Capped Drinks Encryption
 
 Team Members:
-  Rahul Rangarajan
-  Mateo Balzola
-  Richard Kalich
-  Fairuz Abushgarh
-  Isaac Williams
+  Rahul Rangarajan, 
+  Mateo Balzola, 
+  Richard Kalich, 
+  Fairuz Abushgarh, 
+  Isaac Williams, 
 
 Link to Project Demo Video:
 
