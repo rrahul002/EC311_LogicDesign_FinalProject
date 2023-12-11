@@ -3,14 +3,14 @@ EC311- Intro to Logic Design Final Project in Encryption
 
 
 Project Name:
-  Capped Drinks Encryption
+    Capped Drinks Encryption
 
 Team Members:
-  Rahul Rangarajan, 
-  Mateo Balzola, 
-  Richard Kalich, 
-  Fairuz Abushgarh, 
-  Isaac Williams, 
+    Rahul Rangarajan, 
+    Mateo Balzola, 
+    Richard Kalich, 
+    Fairuz Abushgarh, 
+    Isaac Williams, 
 
 Link to Project Demo Video:
 
