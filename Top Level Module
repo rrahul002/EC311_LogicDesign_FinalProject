@@ -1,0 +1,75 @@
+module top_level_module(
+    input wire clk, 
+    input wire reset,
+    input wire [7:0] swt  // Switches for input
+    // ... other necessary inputs and outputs ...
+);
+
+// Wires for inter-module communication
+wire [7:0] userData;
+wire userDone;
+wire [7:0] storedUsername, storedPassword;
+wire startEncrypt, startDecrypt;
+wire [7:0] encryptedData, decryptedData;
+wire doneEncrypt, doneDecrypt;
+
+// Instantiate UserInputInterface
+UserInputInterface userInputInterface_inst (
+    .clk(clk),
+    .reset(reset),
+    .enable(enable),  
+    // ... other connections ...
+    .userData(userData)  
+       // Signal indicating user has finished input
+);
+
+// Instantiate UserDataStorage
+UserDataStorage userDataStorage_inst (
+    .clk(clk),
+    .reset(reset),
+    // ... other connections ...
+    .data(userData),  // Input from UserInputInterface
+    .storedUsername(storedUsername),
+    .storedPassword(storedPassword)
+);
+
+// Instantiate SystemControl
+SystemControl systemControl_inst (
+    .clk(clk),
+    .reset(reset),
+    // ... other connections ...
+    .userData(userData),
+    .userDone(userDone),
+    .storageData(userData),  // Data to be stored/encrypted
+    .storedData(storedUsername), // Assuming this is for decryption
+    .startEncrypt(startEncrypt),
+    .startDecrypt(startDecrypt),
+    .doneEncrypt(doneEncrypt),
+    .doneDecrypt(doneDecrypt)
+);
+
+// Instantiate Encryption Module
+rc4_Encryption encryption_inst (
+    .clk(clk),
+    .reset(reset),
+    // ... other connections ...
+    .startEncrypt(startEncrypt),
+    .plaintext(storedUsername), // Example: Encrypting stored username
+    .ciphertext(encryptedData),
+    .done(doneEncrypt)
+);
+
+// Instantiate Decryption Module
+rc4_Decryption decryption_inst (
+    .clk(clk),
+    .reset(reset),
+    // ... other connections ...
+    .startDecrypt(startDecrypt),
+    .ciphertext(encryptedData), // Data from Encryption Module
+    .decrypted_text(decryptedData),
+    .done(doneDecrypt)
+);
+
+// ... additional logic and module instantiations as needed ...
+
+endmodule
