@@ -1,0 +1,46 @@
+`timescale 1ns / 1ps
+
+module UserDataStorage(
+    input wire clk,          // Clock signal
+    input wire reset,        // Reset signal
+    input wire enable,       // Enable signal for storing data
+    input wire [7:0] data,   // 8-bit data input (from switches)
+    output reg [7:0] storedUsername, // Stored username
+    output reg [7:0] storedPassword  // Stored password
+);
+
+reg [1:0] state; // State variable to track what we are storing
+
+// State definitions
+localparam WAIT = 2'b00,
+           STORE_USERNAME = 2'b01,
+           STORE_PASSWORD = 2'b10;
+
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        // Reset the stored values and state
+        storedUsername <= 8'b0;
+        storedPassword <= 8'b0;
+        state <= WAIT;
+    end
+    else if (enable) begin
+        case (state)
+            WAIT: begin
+                // Waiting for user input
+                state <= STORE_USERNAME;
+            end
+            STORE_USERNAME: begin
+                // Store the username and move to password state
+                storedUsername <= data;
+                state <= STORE_PASSWORD;
+            end
+            STORE_PASSWORD: begin
+                // Store the password and go back to wait state
+                storedPassword <= data;
+                state <= WAIT;
+            end
+        endcase
+    end
+end
+
+endmodule
