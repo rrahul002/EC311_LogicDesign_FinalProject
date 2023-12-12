@@ -1,0 +1,22 @@
+module IncorrectBuzzing(
+    input wire trigger,
+    output reg buzzer
+);
+
+reg [15:0] counter = 16'd0; // Counter for timing
+
+always @(posedge trigger or negedge counter[15])
+begin
+    if (trigger) begin
+        counter <= 16'd0; // Reset counter on trigger
+        buzzer <= 1;      // Activate buzzer
+    end
+    else if (counter != 16'd0) begin
+        counter <= counter - 1; // Decrement counter when not triggered
+    end
+    else begin
+        buzzer <= 0; // Deactivate buzzer when counter reaches zero
+    end
+end
+
+endmodule
