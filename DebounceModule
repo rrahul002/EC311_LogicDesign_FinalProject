@@ -1,0 +1,32 @@
+`timescale 1ns / 1ps
+
+module debounce_module(
+    input wire clk,               // Clock input
+    input wire [7:0] swt_in,      // Raw switch input
+    output reg [7:0] swt_out      // Debounced switch output
+);
+
+    // Parameters for the debouncing time
+    parameter DEBOUNCE_INTERVAL = 100000; // Adjust this based on your clock frequency
+    reg [19:0] counter [7:0];             // Counter for each switch
+    reg [7:0] swt_state [7:0];            // State for each switch
+
+    integer i;
+
+    always @(posedge clk) begin
+        for (i = 0; i < 8; i = i + 1) begin
+            if (swt_state[i] != swt_in[i]) begin
+                counter[i] = counter[i] + 1;
+                if (counter[i] >= DEBOUNCE_INTERVAL) begin
+                    counter[i] = 0;
+                    swt_state[i] = swt_in[i];
+                    swt_out[i] = swt_state[i];
+                end
+            end
+            else begin
+                counter[i] = 0;
+            end
+        end
+    end
+
+endmodule
