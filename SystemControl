@@ -1,0 +1,78 @@
+`timescale 1ns / 1ps
+
+module SystemControl(
+    input wire clk,
+    input wire reset,
+    // Inputs from user interface
+    input wire [7:0] userData,
+    input wire userDone,  // Signal indicating user has entered data
+    // Outputs to user interface
+    output reg askForData,
+    // Signals to/from storage
+    output reg [7:0] storageData,
+    input wire [7:0] storedData,
+    // Control signals for encryption/decryption
+    output reg startEncrypt,
+    output reg startDecrypt,
+    input wire doneEncrypt,
+    input wire doneDecrypt,
+    // Data flow between encryption/decryption and storage
+    input wire [7:0] encryptedData,
+    input wire [7:0] decryptedData
+);
+
+// Define states for the control module
+localparam WAIT_FOR_INPUT = 0,
+           STORE_DATA = 1,
+           ENCRYPT_DATA = 2,
+           DECRYPT_DATA = 3,
+           PROCESS_COMPLETE = 4;
+
+reg [2:0] state;
+
+// Control logic
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        // Reset logic
+        state <= WAIT_FOR_INPUT;
+        askForData <= 1;
+        startEncrypt <= 0;
+        startDecrypt <= 0;
+    end
+    else begin
+        case (state)
+            WAIT_FOR_INPUT: begin
+                if (userDone) begin
+                    storageData <= userData;
+                    state <= STORE_DATA;
+                end
+            end
+            STORE_DATA: begin
+                // Assuming storage operation completes in one cycle
+                startEncrypt <= 1;
+                state <= ENCRYPT_DATA;
+            end
+            ENCRYPT_DATA: begin
+                if (doneEncrypt) begin
+                    startEncrypt <= 0;
+                    storageData <= encryptedData;
+                    state <= DECRYPT_DATA;
+                end
+            end
+            DECRYPT_DATA: begin
+                startDecrypt <= 1;
+                if (doneDecrypt) begin
+                    startDecrypt <= 0;
+                    state <= PROCESS_COMPLETE;
+                end
+            end
+            PROCESS_COMPLETE: begin
+                // Process completed, ready for new input
+                askForData <= 1;
+                state <= WAIT_FOR_INPUT;
+            end
+        endcase
+    end
+end
+
+endmodule
