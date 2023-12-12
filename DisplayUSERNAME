@@ -1,0 +1,42 @@
+module SevenSegmentDisplayUsername(
+    input wire [3:0] switch,
+    output reg [6:0] seg
+);
+
+// Define 7-segment codes for each digit
+reg [6:0] segCodes [15:0] = {
+    7'b1000000, // 0
+    7'b1111001, // 1
+    7'b0100100, // 2
+    7'b0110000, // 3
+    7'b0011001, // 4
+    7'b0010010, // 5
+    7'b0000010, // 6
+    7'b1111000, // 7
+    7'b0000000, // 8
+    7'b0011000, // 9
+    7'b0001000, // A
+    7'b0000011, // B
+    7'b1000110, // C
+    7'b0100001, // D
+    7'b0000110, // E
+    7'b0001110  // F
+};
+
+// Display "USERNAME" using switch as a selector
+always @(*)
+begin
+    case (switch)
+        4'b0000: seg = segCodes[13]; // U
+        4'b0001: seg = segCodes[9];  // S
+        4'b0010: seg = segCodes[5];  // E
+        4'b0011: seg = segCodes[5];  // E
+        4'b0100: seg = segCodes[11]; // R
+        4'b0101: seg = segCodes[14]; // N
+        4'b0110: seg = segCodes[0];  // A
+        4'b0111: seg = segCodes[13]; // U
+        default:  seg = 7'b1111111;  // Turn off display if switch is not 0-7
+    endcase
+end
+
+endmodule
