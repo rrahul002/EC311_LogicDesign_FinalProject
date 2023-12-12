@@ -9,7 +9,7 @@ Team Members:
     Rahul Rangarajan, 
     Mateo Balzola, 
     Richard Kalich, 
-    Fairuz Abushgarh, 
+    Fairuz Abushgarah, 
     Isaac Williams
 
 Link to Project Demo Video:
