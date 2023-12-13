@@ -1,0 +1,27 @@
+`timescale 1ns / 1ps
+
+module Login(
+    input clk,
+    input reset,
+    input [7:0] stored_username,  // Stored username from register
+    input [7:0] stored_password,  // Stored password from register
+    input [7:0] input_username,   // Input username
+    input [7:0] input_password,   // Input password
+    input login_signal,           // Signal to initiate login check
+    output reg login_success      // Output signal indicating login success or failure
+);
+
+// Process login attempt
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        login_success <= 0;
+    end else if (login_signal) begin
+        if ((input_username == stored_username) && (input_password == stored_password)) begin
+            login_success <= 1;  // Login successful
+        end else begin
+            login_success <= 0;  // Login failed
+        end
+    end
+end
+
+endmodule
