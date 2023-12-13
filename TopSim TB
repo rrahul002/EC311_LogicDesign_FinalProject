@@ -1,0 +1,70 @@
+`timescale 1ns / 1ps
+
+module TopModule_tb;
+
+reg clk;
+reg reset;
+reg [8:0] switches;  
+wire login_success;
+wire [7:0] decrypted_output;
+
+// Instantiate the TopModule
+TopModule uut (
+    .clk(clk),
+    .reset(reset),
+    .switches(switches),
+    .login_success(login_success),
+    .decrypted_output(decrypted_output)
+);
+
+// Clock generation
+always #5 clk = ~clk; // Generate a clock with a period of 10 ns
+
+// Test sequence
+initial begin
+    // Initialize
+    clk = 0;
+    reset = 1;
+    switches = 9'b0;
+    
+    // Reset pulse
+    #10;
+    reset = 0;
+    #10;
+   
+    // Simulate input sequence
+    // Set user
+    switches[8:1] = 8'hAA; // Example user input
+    switches[0] = 1;      // Toggle switch to change state (to STORE_USER)
+    #10;
+    switches[0] = 0;
+    #20;
+
+    // Set password
+    switches[8:1] = 8'h55; // Example password input
+    switches[0] = 1;      // Toggle switch to change state (to STORE_PASSWORD)
+    #10;
+    switches[0] = 0;
+    #20;
+
+    // Input username for login
+    switches[8:1] = 8'hAA; // Same user input for successful login
+    switches[0] = 1;      // Toggle switch to change state (to CHECK_PASSWORD)
+    #10;
+    switches[0] = 0;
+    #20;
+
+    // Input password for login
+    switches[8:1] = 8'h55; // Same password input for successful login
+    switches[0] = 1;      // Attempt login
+    #10;
+    switches[0] = 0;
+    #20;
+    // Check login success
+
+    // Finish the test
+    #100;
+    $finish;
+end
+
+endmodule
