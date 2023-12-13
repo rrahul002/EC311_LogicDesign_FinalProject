@@ -18,7 +18,7 @@
 // Additional Comments:
 //
 //////////////////////////////////////////////////////////////////////////////////
-module rc4_Encryption(
+module Encryption(
 	input clk,
 	input reset,
 	input [7:0] key,    	// 8-bit key for simplicity
