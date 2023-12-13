@@ -1,75 +1,104 @@
-module top_level_module(
-    input wire clk, 
-    input wire reset,
-    input wire [7:0] swt  // Switches for input
-    // ... other necessary inputs and outputs ...
+`timescale 1ns / 1ps
+
+module TopModule(
+    input clk,
+    input reset,
+    input [8:0] switches, // 8 switches for input, 1 switch for state transition
+    output reg login_success,
+    output reg [7:0] decrypted_output
 );
 
-// Wires for inter-module communication
-wire [7:0] userData;
-wire userDone;
-wire [7:0] storedUsername, storedPassword;
-wire startEncrypt, startDecrypt;
-wire [7:0] encryptedData, decryptedData;
-wire doneEncrypt, doneDecrypt;
+// State definitions using parameters
+parameter IDLE = 0, STORE_USER = 1, STORE_PASSWORD = 2, ENCRYPT_SAVE = 3, 
+          LOGIN = 4, CHECK_PASSWORD = 5, DECRYPT = 6;
 
-// Instantiate UserInputInterface
-UserInputInterface userInputInterface_inst (
+// Current state variable
+reg [2:0] state; // 3 bits to represent 7 states
+
+// Internal registers
+reg [7:0] stored_user;
+reg [7:0] stored_password;
+reg [7:0] input_user;
+reg [7:0] input_password;
+wire [7:0] ciphertext;
+reg [7:0] switch_input;
+reg last_switch_state; // Register to hold the last state of the transition switch
+
+// Instantiate modules
+
+RegisterModule register(
     .clk(clk),
     .reset(reset),
-    .enable(enable),  
-    // ... other connections ...
-    .userData(userData)  
-       // Signal indicating user has finished input
+    .load(state == STORE_USER || state == STORE_PASSWORD),
+    .input_data1(stored_user),
+    .input_data2(stored_password),
+    .reg_data1(),
+    .reg_data2()
 );
 
-// Instantiate UserDataStorage
-UserDataStorage userDataStorage_inst (
+Encryption encryption(
     .clk(clk),
     .reset(reset),
-    // ... other connections ...
-    .data(userData),  // Input from UserInputInterface
-    .storedUsername(storedUsername),
-    .storedPassword(storedPassword)
+    .key(stored_password),  // Example: using stored user as key
+    .plaintext(stored_user), // Example: encrypting the stored password
+    .ciphertext(ciphertext)
 );
 
-// Instantiate SystemControl
-SystemControl systemControl_inst (
+wire login_success_wire;
+
+Login login(
     .clk(clk),
     .reset(reset),
-    // ... other connections ...
-    .userData(userData),
-    .userDone(userDone),
-    .storageData(userData),  // Data to be stored/encrypted
-    .storedData(storedUsername), // Assuming this is for decryption
-    .startEncrypt(startEncrypt),
-    .startDecrypt(startDecrypt),
-    .doneEncrypt(doneEncrypt),
-    .doneDecrypt(doneDecrypt)
+    .stored_username(stored_user),
+    .stored_password(stored_password),
+    .input_username(input_user),
+    .input_password(input_password),
+    .login_signal(state == CHECK_PASSWORD),
+    .login_success(login_success_wire)
 );
 
-// Instantiate Encryption Module
-rc4_Encryption encryption_inst (
+wire decrypted_output_wire;
+
+Decryption decryption(
     .clk(clk),
     .reset(reset),
-    // ... other connections ...
-    .startEncrypt(startEncrypt),
-    .plaintext(storedUsername), // Example: Encrypting stored username
-    .ciphertext(encryptedData),
-    .done(doneEncrypt)
+    .key(stored_password),  // Assuming the same key as encryption
+    .ciphertext(ciphertext),
+    .decrypted_text(decrypted_output_wire)
 );
 
-// Instantiate Decryption Module
-rc4_Decryption decryption_inst (
-    .clk(clk),
-    .reset(reset),
-    // ... other connections ...
-    .startDecrypt(startDecrypt),
-    .ciphertext(encryptedData), // Data from Encryption Module
-    .decrypted_text(decryptedData),
-    .done(doneDecrypt)
-);
+// FSM Logic for state transition based on switch change
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        state <= IDLE;
+        last_switch_state <= 0;
+    end else begin
+        // Detect rising edge on the transition switch
+        if (!last_switch_state && switches[0]) begin // Rising edge detected
+            case (state)
+                IDLE: state <= STORE_USER;
+                STORE_USER: begin
+                    stored_user <= switch_input;
+                    state <= STORE_PASSWORD;
+                end
+                STORE_PASSWORD: begin
+                    stored_password <= switch_input;
+                    state <= ENCRYPT_SAVE;
+                end
+                ENCRYPT_SAVE: state <= LOGIN;
+                LOGIN: begin
+                    input_user <= switch_input;
+                    state <= CHECK_PASSWORD;
+                end
+                CHECK_PASSWORD: 
+                    state <= login_success_wire ? DECRYPT : IDLE;
+                DECRYPT: state <= IDLE;
+            endcase
+        end
+        last_switch_state <= switches[0]; // Update the last switch state
+        switch_input <= switches[8:1]; // 8-bit input from switches
+    end
+end
 
-// ... additional logic and module instantiations as needed ...
-
+// Remaining module logic...
 endmodule
