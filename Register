@@ -1,1 +1,28 @@
+`timescale 1ns / 1ps
+
+module RegisterModule(
+    input clk,                 // Clock input
+    input reset,               // Reset input
+    input load,                // Load signal to store the inputs into the registers
+    input [7:0] input_data1,   // First 8-bit input
+    input [7:0] input_data2,   // Second 8-bit input
+    output reg [7:0] reg_data1, // Stored data from first input
+    output reg [7:0] reg_data2  // Stored data from second input
+);
+
+// Load data into registers on the rising edge of the clock
+// Reset registers to 0 when the reset signal is high
+always @(posedge clk or posedge reset) begin
+    if (reset) begin
+        // Reset the registers to 0
+        reg_data1 <= 8'b0;
+        reg_data2 <= 8'b0;
+    end else if (load) begin
+        // Load new data into registers
+        reg_data1 <= input_data1;
+        reg_data2 <= input_data2;
+    end
+end
+
+endmodule
 
