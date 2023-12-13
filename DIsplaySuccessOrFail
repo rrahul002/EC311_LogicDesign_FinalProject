@@ -1,0 +1,88 @@
+module SuccessFailDisplay(
+    input wire clk,
+    input wire rst,
+    input wire login_success,
+    output reg [6:0] segments,
+    output reg [3:0] anodes
+);
+
+    reg [2:0] state;
+    reg [23:0] counter;
+    reg [6:0] segment_data;
+
+    // Define segment patterns for each letter in "Success" and "Fail"
+    parameter S = 7'b1001000;
+    parameter U = 7'b0111110;
+    parameter C = 7'b1011000;
+    parameter E = 7'b1001111;
+    parameter F = 7'b1011011;
+    parameter A = 7'b1000110;
+    parameter I = 7'b0011000;
+    parameter L = 7'b0111001;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= 3'b000;
+            counter <= 24'b0;
+            segment_data <= 7'b0000000;
+        end else begin
+            case (state)
+                3'b000: begin // S_IDLE
+                    if (counter == 24'd10000000) begin
+                        counter <= 24'd0;
+                        state <= 3'b001; // S_CHECK_BINARY
+                    end else begin
+                        counter <= counter + 1;
+                    end
+                end
+
+                3'b001: begin // S_CHECK_BINARY
+                    if (binaryInput) begin
+                        segment_data <= S;
+                        state <= 3'b010; // S_U
+                    end else begin
+                        segment_data <= F;
+                        state <= 3'b011; // S_A
+                    end
+                end
+
+                3'b010: begin // S_U
+                    segment_data <= U;
+                    state <= 3'b011; // S_A
+                end
+
+                3'b011: begin // S_A
+                    segment_data <= A;
+                    state <= 3'b100; // S_C
+                end
+
+                3'b100: begin // S_C
+                    segment_data <= C;
+                    state <= 3'b101; // S_C2
+                end
+
+                3'b101: begin // S_C2
+                    segment_data <= C;
+                    state <= 3'b110; // S_E
+                end
+
+                3'b110: begin // S_E
+                    segment_data <= E;
+                    state <= 3'b111; // S_S
+                end
+
+                3'b111: begin // S_S
+                    segment_data <= S;
+                    state <= 3'b000; // S_IDLE
+                end
+            endcase
+        end
+    end
+
+    // Common cathode configuration
+    always @* begin
+        anodes = 4'b1110;
+        segments = segment_data;
+    end
+
+endmodule
