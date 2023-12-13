@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
 
-module rc4_Decryption(
+module Decryption(
 	input clk,
 	input reset,
 	input [7:0] key,      	// 8-bit key for simplicity
