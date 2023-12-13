@@ -1,42 +1,89 @@
 module SevenSegmentDisplayUsername(
-    input wire [3:0] switch,
-    output reg [6:0] seg
+module SevenSegmentDisplayPassword(
+    input wire clk,
+    input wire rst,
+    output reg [6:0] segments,
+    output reg [3:0] anodes
 );
 
-// Define 7-segment codes for each digit
-reg [6:0] segCodes [15:0] = {
-    7'b1000000, // 0
-    7'b1111001, // 1
-    7'b0100100, // 2
-    7'b0110000, // 3
-    7'b0011001, // 4
-    7'b0010010, // 5
-    7'b0000010, // 6
-    7'b1111000, // 7
-    7'b0000000, // 8
-    7'b0011000, // 9
-    7'b0001000, // A
-    7'b0000011, // B
-    7'b1000110, // C
-    7'b0100001, // D
-    7'b0000110, // E
-    7'b0001110  // F
-};
+    reg [2:0] state;
+    reg [23:0] counter;
+    reg [6:0] segment_data;
 
-// Display "USERNAME" using switch as a selector
-always @(*)
-begin
-    case (switch)
-        4'b0000: seg = segCodes[13]; // U
-        4'b0001: seg = segCodes[9];  // S
-        4'b0010: seg = segCodes[5];  // E
-        4'b0011: seg = segCodes[5];  // E
-        4'b0100: seg = segCodes[11]; // R
-        4'b0101: seg = segCodes[14]; // N
-        4'b0110: seg = segCodes[0];  // A
-        4'b0111: seg = segCodes[13]; // U
-        default:  seg = 7'b1111111;  // Turn off display if switch is not 0-7
-    endcase
-end
+    // Define segment patterns for each letter in "password"
+    parameter P = 7'b1100111;
+    parameter A = 7'b1000110;
+    parameter S = 7'b1001000;
+    parameter S2 = 7'b0111001;
+    parameter W = 7'b1001111;
+    parameter O = 7'b0001111;
+    parameter R = 7'b0000001;
+    parameter D = 7'b1111001;
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            state <= 3'b000;
+            counter <= 24'b0;
+            segment_data <= 7'b0000000;
+        end else begin
+            case (state)
+                3'b000: begin // S_IDLE
+                    if (counter == 24'd10000000) begin
+                        counter <= 24'd0;
+                        state <= 3'b001; // S_P
+                    end else begin
+                        counter <= counter + 1;
+                    end
+                end
+
+                3'b001: begin // S_P
+                    segment_data <= P;
+                    state <= 3'b010; // S_A
+                end
+
+                3'b010: begin // S_A
+                    segment_data <= A;
+                    state <= 3'b011; // S_S
+                end
+
+                3'b011: begin // S_S
+                    segment_data <= S;
+                    state <= 3'b100; // S_S2
+                end
+
+                3'b100: begin // S_S2
+                    segment_data <= S2;
+                    state <= 3'b101; // S_W
+                end
+
+                3'b101: begin // S_W
+                    segment_data <= W;
+                    state <= 3'b110; // S_O
+                end
+
+                3'b110: begin // S_O
+                    segment_data <= O;
+                    state <= 3'b111; // S_R
+                end
+
+                3'b111: begin // S_R
+                    segment_data <= R;
+                    state <= 3'b000; // S_D
+                end
+
+                3'b000: begin // S_D
+                    segment_data <= D;
+                    state <= 3'b000; // S_IDLE
+                end
+            endcase
+        end
+    end
+
+    // Common cathode configuration
+    always @* begin
+        anodes = 4'b1110;
+        segments = segment_data;
+    end
 
 endmodule
+
