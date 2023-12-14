@@ -12,7 +12,7 @@ Team Members:
     Fairuz Abushgarah, 
     Isaac Williams
 
-Link to Project Demo Video:
+Link to Project Demo Video: https://youtu.be/f09wvbchmH8
 
 
 Overview of the Project:
